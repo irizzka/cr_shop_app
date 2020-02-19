@@ -1,4 +1,3 @@
-import 'package:cr_shop_app/providers/product_provider.dart';
 import 'package:cr_shop_app/providers/products_provider.dart';
 import 'package:cr_shop_app/widgets/product_item.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:provider/provider.dart';
 class ProductsGrid extends StatelessWidget {
 
   final bool _showOnlyFavorites;
-
 
   ProductsGrid(this._showOnlyFavorites);
 
@@ -23,7 +21,7 @@ class ProductsGrid extends StatelessWidget {
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 3 / 2,
+        childAspectRatio: 2.5 / 2,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),

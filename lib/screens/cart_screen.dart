@@ -1,5 +1,5 @@
-import 'package:cr_shop_app/models/cart_item.dart';
 import 'package:cr_shop_app/providers/cart_provider.dart';
+import 'package:cr_shop_app/providers/orders_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cr_shop_app/widgets/cart_item.dart' as widget;
@@ -11,14 +11,6 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
     return Scaffold(
-      /* body: Consumer<CartProvider>(
-          builder: (context, product, child){
-            return ListView.builder(itemBuilder: (context, index) => ListTile(
-              title: Text(product.items.),
-            ),
-            itemCount: product.items.length,);
-          },
-          ),*/
       appBar: AppBar(),
       body: Column(
         children: <Widget>[
@@ -38,7 +30,7 @@ class CartScreen extends StatelessWidget {
                   Spacer(),
                   Chip(
                     label: Text(
-                      '\$ ${cart.totalAmount}',
+                      '\$ ${cart.totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(
                           color:
                               Theme.of(context).primaryTextTheme.title.color),
@@ -48,7 +40,11 @@ class CartScreen extends StatelessWidget {
                   FlatButton(
                     child: Text('ORDER NOW'),
                     textColor: Theme.of(context).primaryColor,
-                    onPressed: () {},
+                    onPressed: () {
+                     // Navigator.of(context).pushNamed(OrdersScreen.routeName);
+                      Provider.of<OrdersPovider>(context, listen: false).addOrder(cart.items.values.toList(), cart.totalAmount);
+                      cart.removeAll();
+                    },
                   )
                 ],
               ),
@@ -63,6 +59,7 @@ class CartScreen extends StatelessWidget {
                   title: cart.items.values.toList()[index].title,
                   quantity: cart.items.values.toList()[index].quantity,
                   price: cart.items.values.toList()[index].price,
+                  productId: cart.items.keys.toList()[index],
                 )),
           ),
         ],
