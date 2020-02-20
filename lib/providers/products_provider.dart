@@ -1,8 +1,12 @@
+import 'package:cr_shop_app/models/http_exception.dart';
 import 'package:cr_shop_app/providers/product_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ProductsProvider with ChangeNotifier {
-   List<ProductProvider> _items = [ ProductProvider(
+   List<ProductProvider> _items = [
+    /* ProductProvider(
      id: 'p1',
      title: 'Red Shirt',
      description: 'A red shirt - it is pretty red!',
@@ -33,7 +37,34 @@ class ProductsProvider with ChangeNotifier {
        price: 49.99,
        imageUrl:
        'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
-     ),];
+     ),*/
+   ];
+
+   Future<void> fetchAndSetProducts () async{
+     const url = 'https://cr-shop-app.firebaseio.com/products.json';
+     try{
+       http.Response response = await http.get(url);
+
+       final _data = jsonDecode(response.body) as Map<String, dynamic>;
+       final List<ProductProvider> _loadedProducts = [];
+       _data.forEach((key, value){
+         _loadedProducts.add(ProductProvider(
+           id: key,
+           title: value['title'],
+           imageUrl: value['imageUrl'],
+           description: value['description'],
+           price: value['price'],
+           isFavorite: value['isFavorite'],
+         ));
+       });
+      _items = _loadedProducts;
+       notifyListeners();
+     }catch(error){
+       throw (error);
+     }
+   }
+
+
 
    List<ProductProvider> get favoriteItems {
      return _items.where((el) => el.isFavorite).toList();
@@ -45,18 +76,32 @@ class ProductsProvider with ChangeNotifier {
      return [..._items];
    }
 
-   void addProduct(ProductProvider product) {
-    // _items.add();
-     final newProduct = ProductProvider(
-       id: DateTime.now().toString(),
-       price: product.price,
-       description: product.description,
-       imageUrl: product.imageUrl,
-       title: product.title,
-     );
+   Future<void> addProduct(ProductProvider product) async{
+     //todo http
+     const url = 'https://cr-shop-app.firebaseio.com/products.json';
+     try {
+       final response = await http.post(url, body: json.encode({
+         'title': product.title,
+         'description': product.description,
+         'imageUrl': product.imageUrl,
+         'price': product.price,
+         'isFavorite': product.isFavorite,
+       },),);
+       final newProduct = ProductProvider(
+         id: json.decode(response.body)['name'],
+         price: product.price,
+         description: product.description,
+         imageUrl: product.imageUrl,
+         title: product.title,
+       );
 
-     _items.add(newProduct);
-     notifyListeners();
+       _items.add(newProduct);
+       notifyListeners();
+     } catch (error) {
+
+        print(error);
+     }
+
    }
 
    ProductProvider findById (String id){
@@ -64,14 +109,58 @@ class ProductsProvider with ChangeNotifier {
    }
 
 
-   void removeById(String elementId) {
+   Future<void> removeById(String elementId) async{
+      // optimistic update
+     final url = 'https://cr-shop-app.firebaseio.com/products/$elementId.json';
+     final existingProductIndex = _items.indexWhere((el)=> el.id == elementId);
+     var existingProduct = _items[existingProductIndex];
+     _items.removeAt(existingProductIndex);
+
+     final response = await http.delete(url);
+
+       if(response.statusCode >= 400){
+         _items.insert(existingProductIndex, existingProduct);
+         notifyListeners();
+         throw HttpException('Could not delete product.');
+       }
+       existingProduct = null;
+
+        _items.removeAt(existingProductIndex);
+        notifyListeners();
+    /* try{
+       http.delete(url);
+     }catch(error){
+       if()
+        _items.insert(existingProductIndex, existingProduct);
+     }finally{
+      // notifyListeners();
+       existingProduct = null;
+     }*/
+
      _items.removeWhere((el)=> el.id == elementId);
      notifyListeners();
+
    }
 
-   void updateById(String newId, ProductProvider newProduct){
+   Future<void> updateById(String newId, ProductProvider newProduct) async{
+
+     final url = 'https://cr-shop-app.firebaseio.com/products/$newId.json';
+
      final prodIndex = _items.indexWhere((el)=> el.id == newId);
      if(prodIndex >= 0){
+       /////////
+       try{
+        await http.patch(url, body: jsonEncode({
+           'title' : newProduct.title,
+           'description' : newProduct.description,
+           'price' : newProduct.price,
+           'imageUrl' : newProduct.imageUrl,
+
+         }));
+       }catch(error){
+         print(error);
+       }
+       ////////
        _items[prodIndex] = newProduct;
        notifyListeners();
      }
