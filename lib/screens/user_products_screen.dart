@@ -12,8 +12,6 @@ class UserProductsScreen extends StatelessWidget {
     await Provider.of<ProductsProvider>(context, listen: false).fetchAndSetProducts();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
 
@@ -25,7 +23,6 @@ class UserProductsScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              //nav to add scr
               Navigator.of(context).pushNamed(EditProductScreen.routeName);
             },
           )

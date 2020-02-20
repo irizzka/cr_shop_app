@@ -8,7 +8,6 @@ class UserProductItem extends StatelessWidget {
   final String _title;
   final String _imageUrl;
 
-
   UserProductItem(this._title, this._imageUrl, this._id);
 
   @override
@@ -27,22 +26,24 @@ class UserProductItem extends StatelessWidget {
               icon: Icon(Icons.edit),
               color: Theme.of(context).primaryColor,
               onPressed: () {
-                Navigator.of(context).pushNamed(EditProductScreen.routeName, arguments: _id);
+                Navigator.of(context)
+                    .pushNamed(EditProductScreen.routeName, arguments: _id);
               },
             ),
             IconButton(
               icon: Icon(Icons.delete),
               color: Theme.of(context).errorColor,
-              onPressed: () async{
-
-                try{
-                 await Provider.of<ProductsProvider>(context, listen: false).removeById(_id);
-                }catch(e){
-                  _scaff.showSnackBar(SnackBar(
-                    content: Text('Deleting failed'),
-                  ));
+              onPressed: () async {
+                try {
+                  await Provider.of<ProductsProvider>(context, listen: false)
+                      .removeById(_id);
+                } catch (e) {
+                  _scaff.showSnackBar(
+                    SnackBar(
+                      content: Text('Deleting failed'),
+                    ),
+                  );
                 }
-
               },
             )
           ],

@@ -1,5 +1,5 @@
 import 'package:cr_shop_app/providers/cart_provider.dart';
-import 'package:cr_shop_app/providers/orders_provider.dart';
+import 'package:cr_shop_app/widgets/order_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cr_shop_app/widgets/cart_item.dart' as widget;
@@ -37,15 +37,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  FlatButton(
-                    child: Text('ORDER NOW'),
-                    textColor: Theme.of(context).primaryColor,
-                    onPressed: () {
-                     // Navigator.of(context).pushNamed(OrdersScreen.routeName);
-                      Provider.of<OrdersPovider>(context, listen: false).addOrder(cart.items.values.toList(), cart.totalAmount);
-                      cart.removeAll();
-                    },
-                  )
+                  OrderButton(cart: cart),
                 ],
               ),
             ),
@@ -67,3 +59,5 @@ class CartScreen extends StatelessWidget {
     );
   }
 }
+
+

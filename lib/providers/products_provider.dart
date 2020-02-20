@@ -46,6 +46,9 @@ class ProductsProvider with ChangeNotifier {
        http.Response response = await http.get(url);
 
        final _data = jsonDecode(response.body) as Map<String, dynamic>;
+       if(_data == null){
+         return;
+       }
        final List<ProductProvider> _loadedProducts = [];
        _data.forEach((key, value){
          _loadedProducts.add(ProductProvider(
@@ -127,19 +130,8 @@ class ProductsProvider with ChangeNotifier {
 
         _items.removeAt(existingProductIndex);
         notifyListeners();
-    /* try{
-       http.delete(url);
-     }catch(error){
-       if()
-        _items.insert(existingProductIndex, existingProduct);
-     }finally{
-      // notifyListeners();
-       existingProduct = null;
-     }*/
-
      _items.removeWhere((el)=> el.id == elementId);
      notifyListeners();
-
    }
 
    Future<void> updateById(String newId, ProductProvider newProduct) async{
@@ -148,19 +140,16 @@ class ProductsProvider with ChangeNotifier {
 
      final prodIndex = _items.indexWhere((el)=> el.id == newId);
      if(prodIndex >= 0){
-       /////////
        try{
         await http.patch(url, body: jsonEncode({
            'title' : newProduct.title,
            'description' : newProduct.description,
            'price' : newProduct.price,
            'imageUrl' : newProduct.imageUrl,
-
          }));
        }catch(error){
          print(error);
        }
-       ////////
        _items[prodIndex] = newProduct;
        notifyListeners();
      }
