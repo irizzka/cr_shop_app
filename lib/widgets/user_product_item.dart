@@ -38,6 +38,7 @@ class UserProductItem extends StatelessWidget {
                   await Provider.of<ProductsProvider>(context, listen: false)
                       .removeById(_id);
                 } catch (e) {
+                  print(e);
                   _scaff.showSnackBar(
                     SnackBar(
                       content: Text('Deleting failed'),

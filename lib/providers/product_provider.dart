@@ -23,16 +23,16 @@ class ProductProvider with ChangeNotifier {
     isFavorite = newValue;
   }
 
-  Future<void> toggleFavoriteStatus() async{
+  Future<void> toggleFavoriteStatus(String token, String userId) async{
     // proper optimistic update part
     final bool oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
     try{
-      final url = 'https://cr-shop-app.firebaseio.com/products/$id.json';
-     final http.Response response = await http.patch(url, body: jsonEncode({
-        'isFavorite' : isFavorite,
-      },),);
+      final url = 'https://cr-shop-app.firebaseio.com/userFavorites/$userId/$id.json?auth=$token';
+     final http.Response response = await http.put(url, body: jsonEncode(
+        isFavorite,
+      ),);
      if(response.statusCode >= 400){
        _setFavValue(oldStatus);
      }

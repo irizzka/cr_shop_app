@@ -8,13 +8,18 @@ import 'package:http/http.dart' as http;
 class OrdersProvider with ChangeNotifier {
   List<OrderItem> _orders = [];
 
+  final String authToken;
+  final String userId;
+
+  OrdersProvider(this.authToken, this._orders, this.userId);
+
   List<OrderItem> get orders {
     return [..._orders]; // copy of _orders
   }
 
   Future<void> addOrder(List<CartItem> cartProducts, double total) async{
 
-    const String url = 'https://cr-shop-app.firebaseio.com/orders.json';
+    final String url = 'https://cr-shop-app.firebaseio.com/orders/$userId.json?auth=$authToken';
 
     final DateTime timestamp = DateTime.now();
     final http.Response response = await http.post(url, body: json.encode({
@@ -40,7 +45,7 @@ class OrdersProvider with ChangeNotifier {
   }
 
   Future<void> fetchAndSetOrders() async{
-    const String url = 'https://cr-shop-app.firebaseio.com/orders.json';
+    final String url = 'https://cr-shop-app.firebaseio.com/orders/$userId.json?auth=$authToken';
 
     http.Response response = await http.get(url);
     if(response.statusCode >= 400){

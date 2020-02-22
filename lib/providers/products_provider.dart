@@ -40,8 +40,17 @@ class ProductsProvider with ChangeNotifier {
      ),*/
    ];
 
-   Future<void> fetchAndSetProducts () async{
-     const url = 'https://cr-shop-app.firebaseio.com/products.json';
+   final String _authToken;
+   final String _userId;
+
+
+   ProductsProvider(this._authToken, this._items, this._userId);
+
+   Future<void> fetchAndSetProducts ([bool filterByUser = false]) async{
+
+     final String filterStr = filterByUser ? 'orderBy="creatorId"&equalTo="$_userId"' : '';
+
+     String url = 'https://cr-shop-app.firebaseio.com/products.json?auth=$_authToken&$filterStr';
      try{
        http.Response response = await http.get(url);
 
@@ -49,6 +58,9 @@ class ProductsProvider with ChangeNotifier {
        if(_data == null){
          return;
        }
+       url = 'https://cr-shop-app.firebaseio.com/userFavorites/$_userId.json?auth=$_authToken';
+       final favoriteResponse = await http.get(url);
+       final favoriteData = json.decode(favoriteResponse.body);
        final List<ProductProvider> _loadedProducts = [];
        _data.forEach((key, value){
          _loadedProducts.add(ProductProvider(
@@ -57,7 +69,7 @@ class ProductsProvider with ChangeNotifier {
            imageUrl: value['imageUrl'],
            description: value['description'],
            price: value['price'],
-           isFavorite: value['isFavorite'],
+           isFavorite: favoriteData == null ? false : favoriteData[key] ?? false,
          ));
        });
       _items = _loadedProducts;
@@ -81,7 +93,7 @@ class ProductsProvider with ChangeNotifier {
 
    Future<void> addProduct(ProductProvider product) async{
      //todo http
-     const url = 'https://cr-shop-app.firebaseio.com/products.json';
+     final url = 'https://cr-shop-app.firebaseio.com/products.json?auth=$_authToken';
      try {
        final response = await http.post(url, body: json.encode({
          'title': product.title,
@@ -89,6 +101,7 @@ class ProductsProvider with ChangeNotifier {
          'imageUrl': product.imageUrl,
          'price': product.price,
          'isFavorite': product.isFavorite,
+         'creatorId' : _userId,
        },),);
        final newProduct = ProductProvider(
          id: json.decode(response.body)['name'],
@@ -114,7 +127,7 @@ class ProductsProvider with ChangeNotifier {
 
    Future<void> removeById(String elementId) async{
       // optimistic update
-     final url = 'https://cr-shop-app.firebaseio.com/products/$elementId.json';
+     final url = 'https://cr-shop-app.firebaseio.com/products/$elementId.json?auth=$_authToken';
      final existingProductIndex = _items.indexWhere((el)=> el.id == elementId);
      var existingProduct = _items[existingProductIndex];
      _items.removeAt(existingProductIndex);
@@ -128,15 +141,15 @@ class ProductsProvider with ChangeNotifier {
        }
        existingProduct = null;
 
-        _items.removeAt(existingProductIndex);
-        notifyListeners();
+      //  _items.removeAt(existingProductIndex);
+     //   notifyListeners();
      _items.removeWhere((el)=> el.id == elementId);
      notifyListeners();
    }
 
    Future<void> updateById(String newId, ProductProvider newProduct) async{
 
-     final url = 'https://cr-shop-app.firebaseio.com/products/$newId.json';
+     final url = 'https://cr-shop-app.firebaseio.com/products/$newId.json?auth=$_authToken';
 
      final prodIndex = _items.indexWhere((el)=> el.id == newId);
      if(prodIndex >= 0){

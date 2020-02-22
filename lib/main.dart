@@ -1,5 +1,7 @@
+import 'package:cr_shop_app/providers/auth_provider.dart';
 import 'package:cr_shop_app/providers/orders_provider.dart';
 import 'package:cr_shop_app/providers/products_provider.dart';
+import 'package:cr_shop_app/screens/auth_screen.dart';
 import 'package:cr_shop_app/screens/cart_screen.dart';
 import 'package:cr_shop_app/screens/edit_product_screen.dart';
 import 'package:cr_shop_app/screens/orders_screen.dart';
@@ -19,32 +21,51 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(
-          value: ProductsProvider(),
+          value: AuthProvider(),
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, ProductsProvider>(
+
+         // create: (ctx) => ProductsProvider(),
+          builder: (ctx, auth, previousProducts) =>
+              ProductsProvider(auth.token, previousProducts == null ? [] : previousProducts.items,
+              auth.userId),
         ),
         ChangeNotifierProvider.value(
           value: CartProvider(),
         ),
-        ChangeNotifierProvider.value(
+        ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
+          builder: (ctx, auth, previousOrders) => OrdersProvider(
+            auth.token, previousOrders == null ? [] : previousOrders.orders,
+            auth.userId
+          ),
+        )
+        /*ChangeNotifierProvider.value(
           value: OrdersProvider(),
-        ),
+        ),*/
       ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          accentColor: Colors.orange,
-          fontFamily: 'Lato',
+      child: Consumer<AuthProvider>(
+        builder: (ctx, auth, child) => MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            accentColor: Colors.orange,
+            fontFamily: 'Lato',
+          ),
+          home: auth.isAuth ? ProductsOverviewScreen() : AuthScreen(),
+         /* initialRoute: auth.isAuth
+              ? ProductsOverviewScreen.routeName
+              : AuthScreen.routeName,*/
+          routes: {
+            AuthScreen.routeName: (context) => AuthScreen(),
+            ProductsOverviewScreen.routeName: (context) =>
+                ProductsOverviewScreen(),
+            ProductDetailScreen.routeName: (context) => ProductDetailScreen(),
+            CartScreen.routeName: (context) => CartScreen(),
+            OrdersScreen.routeName: (context) => OrdersScreen(),
+            UserProductsScreen.routeName: (context) => UserProductsScreen(),
+            EditProductScreen.routeName: (context) => EditProductScreen(),
+          },
         ),
-        //home: ProductsOverviewScreen(),
-        initialRoute: ProductsOverviewScreen.routeName,
-        routes: {
-          ProductsOverviewScreen.routeName : (context) => ProductsOverviewScreen(),
-          ProductDetailScreen.routeName : (context) => ProductDetailScreen(),
-          CartScreen.routeName : (context) => CartScreen(),
-          OrdersScreen.routeName : (context) => OrdersScreen(),
-          UserProductsScreen.routeName : (context) => UserProductsScreen(),
-          EditProductScreen.routeName : (context) => EditProductScreen(),
-        },
       ),
     );
   }

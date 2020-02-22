@@ -1,3 +1,4 @@
+import 'package:cr_shop_app/providers/auth_provider.dart';
 import 'package:cr_shop_app/providers/cart_provider.dart';
 import 'package:cr_shop_app/providers/product_provider.dart';
 import 'package:cr_shop_app/screens/product_detail_screen.dart';
@@ -9,6 +10,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final _product = Provider.of<ProductProvider>(context, listen: false);
     final _cart = Provider.of<CartProvider>(context, listen: false);
+    final _authData = Provider.of<AuthProvider>(context, listen: false);
     print('product rebuilds');
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -34,7 +36,7 @@ class ProductItem extends StatelessWidget {
                     ? Icons.favorite
                     : Icons.favorite_border),
                 onPressed: () {
-                  _product.toggleFavoriteStatus();
+                  _product.toggleFavoriteStatus(_authData.token, _authData.userId );
                 },
                 color: Theme.of(context).accentColor,
               ),
