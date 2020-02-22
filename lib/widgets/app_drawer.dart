@@ -1,4 +1,5 @@
 import 'package:cr_shop_app/providers/auth_provider.dart';
+import 'package:cr_shop_app/screens/auth_screen.dart';
 import 'package:cr_shop_app/screens/orders_screen.dart';
 import 'package:cr_shop_app/screens/products_overview_screen.dart';
 import 'package:cr_shop_app/screens/user_products_screen.dart';
@@ -44,6 +45,7 @@ class AppDrawer extends StatelessWidget {
             leading: Icon(Icons.exit_to_app),
             title: Text('Logout'),
             onTap: () {
+              Navigator.of(context).pushReplacementNamed(AuthScreen.routeName);
               Provider.of<AuthProvider>(context, listen: false).logout();
             },
           ),

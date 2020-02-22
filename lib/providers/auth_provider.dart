@@ -2,6 +2,7 @@ import 'package:cr_shop_app/models/http_exception.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   String _token;
@@ -24,10 +25,13 @@ class AuthProvider with ChangeNotifier {
     return _userId;
   }
 
-  void logout() {
+  Future<void> logout() async{
     _userId = null;
     _token = null;
     notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('userData');
+
   }
 
 
@@ -54,9 +58,29 @@ class AuthProvider with ChangeNotifier {
       _userId = responseData['localId'];
     //  _expiryDate = DateTime.now().add(Duration(seconds: int.parse(responseData['expiresIn'])));
       notifyListeners();
+      final prefs = await SharedPreferences.getInstance();
+      final userData = json.encode({'token' : _token, 'userId' : _userId});
+      prefs.setString('userData', userData);
+      //prefs.set
+
     }catch(error){
       throw error;
     }
+  }
+
+  Future<bool> tryAutoLogin() async{
+    final prefs = await SharedPreferences.getInstance();
+    if(!prefs.containsKey('userData')){
+      return false;
+    }
+    final extractedUserData = json.decode(prefs.getString('userData')) as Map<String, Object>;
+
+    _token = extractedUserData['token'];
+    _userId = extractedUserData['userId'];
+    notifyListeners();
+    //_autoLogout();
+    return true;
+
   }
 
   Future<void> signup(String email, String password) async {
